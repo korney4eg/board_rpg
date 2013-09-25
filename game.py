@@ -7,7 +7,7 @@ import os, random
 from time import sleep
 
 #DEBUG -- уровень дебага = 0..5
-DEBUG = 1
+DEBUG = 4
 
 # Для графики
 #Объявляем переменные
@@ -68,7 +68,8 @@ class Board():
         deb (3,"Best warior is "+str(bestWar)+" his name is "+str(bestWar.name) +"he has will="+str(bestWar.will))
         return bestWar
 
-
+    def countWariors(self):
+        return len(self.wariors)
 
     def draw(self,screen):
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(W*cell, 0, 400, H*cell))
@@ -122,8 +123,8 @@ class Warior():
     def getNearestEnemy(self,board):
         deb(3,"Looking for the nearest enemy")
         deb(3,"The hero is "+str(self))
-        nearWar=Warior("",0,0,0,0,0)
-        mindxy = 100
+        nearWar=Warior("",0,9999,9999,0,0)
+        mindxy = 9999
         for war in board.wariors:
             if war == self:
                 continue
@@ -133,6 +134,8 @@ class Warior():
                 mindxy = dx**2+dy**2
                 nearWar = war
                 deb(3,"Aha, here he is "+str(nearWar.name))
+        if nearWar.name == "":
+            return None
         deb(3,"The enemy is "+str(nearWar))
         return nearWar
 
@@ -154,7 +157,7 @@ class Warior():
             
     def updateWarior(self,board,d):
         if self in board.wariors:
-            if (self.x == 0 and d == "l") or (self.x == board.x and d == "r") or (self.y == 0 and d == "u") or (self.y == board.y and d == "d"):
+            if (self.x == 0 and d == "l") or (self.x == board.x-1 and d == "r") or (self.y == 0 and d == "u") or (self.y == board.y-1 and d == "d"):
                 return 1
 
             if   d == "u" :newPos = (self.x,self.y - 1)
@@ -209,7 +212,29 @@ class Game:
             for war in self.board.wariors:
                 war.curWill += war.will
                 deb(3,"Warior "+str(war)+" has will="+str(war.curWill))
-
+                
+#    def control(self):
+#        """Handle the controls of the game."""
+#
+#        keys = pygame.key.get_pressed()
+#
+#        def pressed(key):
+#            """Check if the specified key is pressed."""
+#
+#            return self.pressed_key == key or keys[key]
+#
+#
+#
+#        if pressed(pg.K_UP):
+#            pass
+#        elif pressed(pg.K_DOWN):
+#            pass
+#        elif pressed(pg.K_LEFT):
+#            pass
+#        elif pressed(pg.K_RIGHT):
+#            pass
+#        self.pressed_key = None
+        
     def main(self):
         pygame.init() # Инициация PyGame, обязательная строчка 
         screen = pygame.display.set_mode((W*cell+400, H*cell)) # Создаем окошко
@@ -218,6 +243,7 @@ class Game:
         clock = pygame.time.Clock()
         self.board.draw(screen)
         while not done:
+            if self.board.countWariors() <= 1: break
             curWar = self.board.getWill()
             deb (1,"It time to go,"+str(curWar.name))
             if not curWar.human:
@@ -256,7 +282,7 @@ class Game:
             pygame.display.flip()
             pygame.display.update() 
             clock.tick(30)
-            if len( self.board.wariors) == 1: done
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done
@@ -266,15 +292,15 @@ class Game:
 
 
 
-board = Board(5,5)
+board = Board(W,H)
 war = Warior("J",5,0,0,15,5)
 board.addWarior(war)
 #war2 = Warior("A",100,0,24,1,3,True)
 #board.addWarior(war2)
 # Можно поиграться и добавить дополнительных ботов
-war3 = Warior("B",100,0,24,1,7)
+war3 = Warior("B",100,0,H-1,1,7)
 board.addWarior(war3)
-war4 = Warior("C",100,24,24,25,1,True)
+war4 = Warior("C",100,W-1,H-1,25,1)
 board.addWarior(war4)
 new_game = Game(board)
 #pygame.init()
