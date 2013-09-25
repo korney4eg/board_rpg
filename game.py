@@ -351,7 +351,6 @@ class Game:
 #board.addWarior(war2)
 # Можно поиграться и добавить дополнительных ботов
 
-
 board = Board(W,H)
 war = Warior("J",5,0,0,15,5)
 print war.__class__.__name__
