@@ -3,17 +3,16 @@
 
 import pygame
 from pygame.locals import *
-import os, random
+import  random
 from time import sleep
 
 #DEBUG -- уровень дебага = 0..5
-DEBUG = 4
+DEBUG = 0
 
 # Для графики
 #Объявляем переменные
 WIN_WIDTH = 800 #Ширина создаваемого окна
 WIN_HEIGHT = 640 # Высота
-DISPLAY = (WIN_WIDTH, WIN_HEIGHT) # Группируем ширину и высоту в одну переменную
 BACKGROUND_COLOR = "#004400"
 WIDTH = 22
 HEIGHT = 32
@@ -26,7 +25,9 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
-
+MOVE_COLOR = (255,255,102,52)
+HIT_COLOR = (255,71,71,52) 
+MOVES = {"u":(0,-1),"d":(0,1),"l":(-1,0),"r":(1,0)}
 
 def deb(debug ,mes):
     if debug <= DEBUG: print mes
@@ -50,7 +51,14 @@ class Board():
             self.wariors.append(warior)
             deb(2, "added warior,named "+warior.name+" to position "+str(warior.x)+"x"+str(warior.y)+" and his hp="+str(warior.hp))
 
-
+    def getByPos(self,(x,y)):
+        if (x < 0 ) or (x >= self.x) or (y < 0) or (y >= self.y):
+            return 100
+        for war in self.wariors:
+            if war.x == x and war.y == y:
+                return 2
+        return 1        
+        
     def getWariorByPos(self,(x,y)):
         for war in self.wariors:
             if war.x == x and war.y == y:
@@ -80,25 +88,48 @@ class Board():
         for war in self.wariors:
             war.drawChars(screen,W*cell + 45 , l)
             l+= 30
-        line = ""
-        #os.system('clear')
-#        print "##"*(self.x+1)
-#        for a in range (self.y):
-#            line ="#"
-#            for b in range(self.x):
-#                printed = False
-#                for war in self.wariors:
-#                    if war.x ==  b and war.y == a:
-#                        printed = True
-#                        line+= war.name
-#                        break
-#                if not printed:
-#                    line += "_"
-#                if b < self.x-1:
-#                    line +="|"
-#            print line+"#"
-#        print "##"*(self.x+1)
-#        print
+            
+    def drawTurn(self,screen,warior,spd = 2):
+        moves = ["u","d","l","r"]
+        positions = [[(warior.x,warior.y)]]
+        move = []
+        hit = []
+        
+        #print positions[0]
+        
+        while (len(positions[0])<=spd):
+
+            pos = positions.pop(0)
+            #print pos
+            for mo in moves:
+                pos2=[]
+                newPos =  pos[-1][0] +MOVES[mo][0],pos[-1][1] +MOVES[mo][1]
+                #print "from",pos[-1],
+                #print " I can go ", MOVES[mo]
+                #print newPos
+                if self.getByPos(newPos) == 1:
+                    #print "found grass"
+                    if newPos not in move:
+                        #print "I wasn't here"
+                        pos2 = pos + [newPos]
+                        #print "now pos=",pos
+                        move.append(newPos)
+                        #print "moves are ",move
+                        if pos not in positions:
+                            positions.append(pos2)
+                            #print "positions are ",positions
+                elif self.getByPos(newPos) == 2:
+                    if (newPos not in hit) and (warior.x,warior.y != newPos):
+                        hit.append(newPos)
+        #print "it's done"
+        #if (warior.x,warior.y) in hit: hit.remove((warior.x,warior.y))
+        for m in move:
+            pygame.draw.rect(screen, MOVE_COLOR, pygame.Rect(m[0]*cell, m[1]*cell, cell, cell))
+        for h in hit:
+            pygame.draw.rect(screen, HIT_COLOR, pygame.Rect(h[0]*cell, h[1]*cell, cell, cell))
+        sleep(1)
+        self.draw(screen)
+
 
 
 class Warior():
@@ -114,11 +145,18 @@ class Warior():
             self.human = True
         else:
             self.human = False
-            
+        self.team = ""    
         self.color = (random.randrange(10,255),random.randrange(10,255),random.randrange(10,255))
+        self.Points = 0
+        self.curPoints = 0
 
     def hit (self,enemy):
         enemy.hp = enemy.hp - self.dam
+        
+    def moveTo(self,board,(x,y)):
+        if board.getWariorByPos == None:
+            self.x = x
+            self.y = y
 
     def getNearestEnemy(self,board):
         deb(3,"Looking for the nearest enemy")
@@ -139,6 +177,13 @@ class Warior():
         deb(3,"The enemy is "+str(nearWar))
         return nearWar
 
+
+    def addToTeam(self,team):
+        self.team = team
+        
+    def getTeam(self):
+        return self.team
+    
     def moveToWar(self,enemy):
         deb(3,"How should he goes...")
         deb(3,"my x="+str(self.x)+" y="+str(self.y))
@@ -245,6 +290,7 @@ class Game:
         while not done:
             if self.board.countWariors() <= 1: break
             curWar = self.board.getWill()
+            self.board.drawTurn(screen, curWar, 5)
             deb (1,"It time to go,"+str(curWar.name))
             if not curWar.human:
                 enemy = curWar.getNearestEnemy(self.board)
@@ -278,7 +324,7 @@ class Game:
             curWar.updateWarior(self.board,direction)
             self.endTurn(curWar)
             deb(2,"Now you should press Enter")
-            self.board.draw(screen)
+            #self.board.draw(screen)
             pygame.display.flip()
             pygame.display.update() 
             clock.tick(30)
@@ -290,31 +336,29 @@ class Game:
 
                 
 
-
+#                имя    hp    x     y      dam    will     hum
+#war2 = Warior("A",    100,   0,    24,    1,    3,        True) --- это объявление бойца
+# Пояснения:
+# имя  -- имя бойца, пока нигде не пишется и не фигурирует
+# hp  --  здоровье бойца. Когда становиться = 0, боец погибает и пропадает с поля
+#  x  -- координата x на поле, максимальна == длина поля -1
+# y  -- координата y на поле , максимальна == высота поля -1
+# dam -- урон, наносимый противнику
+# will -- воля, у кого больше, тот раньше ходит
+# hum -- боец управляется человеком или компом. Если стоит значение True, то управлнеие человеком, если ничего или False  - бот
+#
+# Следующая команда добавляет созданного бойца на поле
+#board.addWarior(war2)
+# Можно поиграться и добавить дополнительных ботов
 
 board = Board(W,H)
 war = Warior("J",5,0,0,15,5)
+print war.__class__.__name__
 board.addWarior(war)
-#war2 = Warior("A",100,0,24,1,3,True)
-#board.addWarior(war2)
-# Можно поиграться и добавить дополнительных ботов
 war3 = Warior("B",100,0,H-1,1,7)
 board.addWarior(war3)
-war4 = Warior("C",100,W-1,H-1,25,1)
+war4 = Warior("C",100,W-1,H-1,25,1,True)
 board.addWarior(war4)
 new_game = Game(board)
-#pygame.init()
-#screen = pygame.display.set_mode((W*cell, H*cell)) # Создаем окошко
-#pygame.display.set_caption("Board game") # Пишем в шапку
-#done = False
-#clock = pygame.time.Clock()
-#while not done:
-#    for event in pygame.event.get():
-#        if event.type == pygame.QUIT:
-#                done = True
-#        board.draw(screen)
-#        pygame.display.flip()
-#        clock.tick(30)
-#DISPLAYSURF = pygame.display.set_mode((400, 300))
-#pygame.display.set_caption('Hello World!')
+
 
