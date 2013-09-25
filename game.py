@@ -127,7 +127,7 @@ class Board():
             pygame.draw.rect(screen, MOVE_COLOR, pygame.Rect(m[0]*cell, m[1]*cell, cell, cell))
         for h in hit:
             pygame.draw.rect(screen, HIT_COLOR, pygame.Rect(h[0]*cell, h[1]*cell, cell, cell))
-        sleep(1)
+
         self.draw(screen)
 
 
@@ -350,6 +350,7 @@ class Game:
 # Следующая команда добавляет созданного бойца на поле
 #board.addWarior(war2)
 # Можно поиграться и добавить дополнительных ботов
+
 
 board = Board(W,H)
 war = Warior("J",5,0,0,15,5)
