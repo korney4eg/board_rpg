@@ -86,6 +86,8 @@ class Board():
         screen.blit(boardsurf,(0,0))
         for war in self.wariors:
             war.draw(screen)
+            if war.current:
+                self.drawTurn(screen,war)
         l = 20
         for war in self.wariors:
             war.drawChars(screen,W*cell + 45 , l)
@@ -112,7 +114,8 @@ class Board():
                 if self.getByPos(newPos) == 1:
                     #print "found grass"
                     if newPos not in move:
-                        #print "I wasn't here"
+                        #print "I wasn't here"rr
+
                         pos2 = pos + [newPos]
                         #print "now pos=",pos
                         move.append(newPos)
@@ -156,6 +159,7 @@ class Warior():
         self.color = (random.randrange(10,255),random.randrange(10,255),random.randrange(10,255))
         self.Points = 0
         self.curPoints = 0
+        self.current = False
 
     def hit (self,enemy):
         enemy.hp = enemy.hp - self.dam
@@ -230,14 +234,21 @@ class Warior():
             
     def draw(self, screen): # Выводим себя на экран
         pygame.draw.rect(screen, self.color, pygame.Rect(self.x*cell, self.y*cell, cell, cell))
-        
+
+
     def drawChars(self, screen,x,y): # Выводим себя на экран
         pygame.draw.rect(screen, self.color, pygame.Rect(x, y, cell, cell))
         # set up fonts
+        if self.current:
+            COL = GREEN
+        else:
+            COL = BLACK
+        pygame.draw.circle(screen, COL, (x-15, y), 2)
+        
         basicFont = pygame.font.SysFont(None, 24)
         
         # set up the text
-        text = basicFont.render(str(self.hp), True, WHITE, BLACK)
+        text = basicFont.render(self.name+" "+str(self.hp), True, WHITE, BLACK)
         textRect = text.get_rect()
         textRect.centerx = x + 40
         textRect.centery = y + 10
@@ -295,70 +306,58 @@ class Game:
         done = False
         clock = pygame.time.Clock()
         self.board.draw(screen)
-        moved = True
-        while not done:
+#        while not done:
 
-            if self.board.countWariors() <= 1: break
+        while self.board.countWariors() > 1: 
             curWar = self.board.getWill()
-            if moved:
-                self.board.draw(screen)
-                moved=False
-                print "board moved"
-            else:
-               # self.board.drawTurn(screen, curWar) 
-                print "wait for move"           
+            self.board.draw(screen)
             deb (1,"It time to go,"+str(curWar.name))
             if not curWar.human:
                 enemy = curWar.getNearestEnemy(self.board)
                 deb(2,"In main enemy is "+str(enemy.name))
                 direction = curWar.moveToWar(enemy)
                 moved = True
-                
+                curWar.updateWarior(self.board,direction)
             else:
-                
+                curWar.current = True
                 turnMade = False
                 deb(2,"wait for key pressed")
-                print "wait for key pressed"
                 while  turnMade == False:
+                    #print "Currnet warior is ",curWar.name
                     key = ""
-                    self.board.drawTurn(screen, curWar)
-                    for event in pygame.event.get():
-                        self.board.drawTurn(screen, curWar)
-                        if event.type == pygame.QUIT:
-                            exit()
-                        pressed = pygame.key.get_pressed()
-                        deb(20,str(pressed))
-                        turnMade = True
-                        if pressed [pygame.K_LEFT]:
-                            direction = "l"
-                            key = pygame.K_LEFT
-                        elif pressed [pygame.K_RIGHT]:
-                            direction = "r"
-                            key = pygame.K_RIGHT
-                        elif pressed [pygame.K_UP]:
-                            direction = "u"   
-                            key = pygame.K_UP
-                        elif pressed [pygame.K_DOWN]:
-                            direction = "d"
-                            key = pygame.K_DOWN    
-                        else:
-                            turnMade = False                                       
-                            if key != "":
-                                while (event.type != pygame.KEYUP) and (event.key == key):continue
-                                moved = True
-                                print "pressed"
-            curWar.updateWarior(self.board,direction)
+                    #self.board.drawTurn(screen, curWar)
+                    pressed = pygame.key.get_pressed()
+                    print sum(pressed)
+                    deb(20,str(pressed))
+                    turnMade = True
+                    if pressed [pygame.K_LEFT]:
+                        direction = "l"
+                        key = pygame.K_LEFT
+                    elif pressed [pygame.K_RIGHT]:
+                        direction = "r"
+                        key = pygame.K_RIGHT
+                    elif pressed [pygame.K_UP]:
+                        direction = "u"   
+                        key = pygame.K_UP
+                    elif pressed [pygame.K_DOWN]:
+                        direction = "d"
+                        key = pygame.K_DOWN    
+                    else:
+                        turnMade = False                                       
+                        if key != "":
+                            pressed = []
+                            print "pressed"
+                curWar.current = False
+                curWar.updateWarior(self.board,direction)
             
             self.endTurn(curWar)
             deb(2,"Now you should press Enter")
             
             pygame.display.flip()
             pygame.display.update() 
-            clock.tick(30)
+            clock.tick(5)
             
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    done
+
 
 
                 
@@ -381,10 +380,8 @@ class Game:
 board = Board(W,H)
 war = Warior("J",5,0,0,15,5)
 board.addWarior(war)
-war3 = Warior("B",100,4,H-1,1,7)
+war3 = Warior("B",100,4,H-1,1,7, True)
 board.addWarior(war3)
 war4 = Warior("C",100,W-1,H-1,25,1,True)
 board.addWarior(war4)
 new_game = Game(board)
-
-
