@@ -81,11 +81,17 @@ class Board():
 
     def draw(self,screen):
         boardsurf = pygame.Surface((W*cell+400,H*cell))
-        pygame.draw.rect(boardsurf, (0, 0, 0), pygame.Rect(W*cell, 0, 400, H*cell))
-        pygame.draw.rect(boardsurf, (0, 26, 48), pygame.Rect(0, 0, W*cell, H*cell))
+        boardPic = pygame.image.load('images/ground.png').convert()
+        pygame.draw.rect(boardsurf, BLACK, pygame.Rect(W*cell, 0, 400, H*cell))
+        #pygame.draw.rect(boardsurf, (0, 26, 48), pygame.Rect(0, 0, W*cell, H*cell))
         screen.blit(boardsurf,(0,0))
+        for w in range(W):
+            for h in range(H):
+                screen.blit(boardPic,(w*cell,h*cell))
         cur = None
         for war in self.wariors:
+            if war.image == "":
+                war.image = pygame.image.load('images/soldier.png').convert_alpha()
             war.draw(screen)
             if war.current:
                 cur = war
@@ -168,7 +174,8 @@ class Warior():
         self.Points = spd
         self.curPoints = self.Points
         self.current = False
-
+        self.pic = pygame.image.load("images/soldier.png").convert
+        self.image =  ""
     def hit (self,enemy):
         enemy.hp = enemy.hp - self.dam
         
@@ -241,26 +248,34 @@ class Warior():
         self.curPoints -= 1
         board.deathWork()
             
+    def ima(self,screen,x,y):
+        if self.image != "":
+            screen.blit(self.image, (x,y))
+        else:
+            pygame.draw.rect(screen, self.color, pygame.Rect(x, y, cell, cell))
+
             
     def draw(self, screen): # Выводим себя на экран
-        pygame.draw.rect(screen, self.color, pygame.Rect(self.x*cell, self.y*cell, cell, cell))
+        
+        self.ima(screen,self.x*cell, self.y*cell)
+        
 
 
     def drawChars(self, screen,x,y): # Выводим себя на экран
-        pygame.draw.rect(screen, self.color, pygame.Rect(x, y, cell, cell))
-        # set up fonts
+        
+        self.ima(screen,x,y)
         if self.current:
             COL = GREEN
         else:
             COL = BLACK
-        pygame.draw.circle(screen, COL, (x-15, y), 2)
+        pygame.draw.circle(screen, COL, (x-15, y+13), 2)
         
         basicFont = pygame.font.SysFont(None, 24)
         
         # set up the text
         text = basicFont.render(self.name+" "+str(self.hp), True, WHITE, BLACK)
         textRect = text.get_rect()
-        textRect.centerx = x + 40
+        textRect.centerx = x + 50
         textRect.centery = y + 10
         screen.blit(text, textRect)
 
@@ -312,7 +327,7 @@ class Game:
         screen = pygame.display.set_mode((W*cell+400, H*cell)) # Создаем окошко
         pygame.display.set_caption("Board game") # Пишем в шапку
         background = pygame.Surface(screen.get_size())
-        background.fill((0,0,0))     # fill the background white (red,green,blue)
+        background.fill(BLACK)     # fill the background white (red,green,blue)
         background = background.convert()  # faster blitting
         done = False
         clock = pygame.time.Clock()
@@ -339,7 +354,7 @@ class Game:
 
 
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     done = True 
                 if curWar.human and event.type == pygame.KEYDOWN:
                     if event.key ==  pygame.K_LEFT:
