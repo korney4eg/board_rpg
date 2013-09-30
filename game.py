@@ -105,7 +105,7 @@ class Board():
         
         #print positions[0]
         
-        while (len(positions[0])<=warior.spd):
+        while (len(positions[0])<=warior.curPoints):
 
             pos = positions.pop(0)
             #print pos
@@ -130,8 +130,6 @@ class Board():
                             #print "positions are ",positions
                 elif getPos == 2:
                     if (newPos not in hit) and (warior.x != newPos[0] or warior.y!= newPos[1]):
-                        print (str((warior.x,warior.y)))
-                        print ("found enemy in "+ str(newPos))
                         hit.append(newPos)
         #print "it's done"
 
@@ -167,8 +165,8 @@ class Warior():
             self.human = False
         self.team = ""    
         self.color = (random.randrange(10,255),random.randrange(10,255),random.randrange(10,255))
-        self.Points = 0
-        self.curPoints = 0
+        self.Points = spd
+        self.curPoints = self.Points
         self.current = False
 
     def hit (self,enemy):
@@ -240,6 +238,7 @@ class Warior():
         else:
             self.x,self.y = newPos
             deb(1,"Now "+self.name+" moved to "+str(newPos))
+        self.curPoints -= 1
         board.deathWork()
             
             
@@ -284,6 +283,7 @@ class Game:
             for war in self.board.wariors:
                 war.curWill += war.will
                 deb(3,"Warior "+str(war)+" has will="+str(war.curWill))
+                war.curPoints = war.Points
                 
 #    def control(self):
 #        """Handle the controls of the game."""
@@ -318,11 +318,15 @@ class Game:
         clock = pygame.time.Clock()
         self.board.draw(screen)
 #        while not done:
-
+        turnMade = False
         while self.board.countWariors() > 1 :
-            if done: exit() 
+            if done: 
+                exit() 
             curWar = self.board.getWill()
             curWar.current = True
+            if curWar.curPoints == 0:
+                turnMade = True
+            
             key = ""
             self.board.draw(screen)
             deb (1,"It time to go,"+str(curWar.name))
@@ -331,35 +335,36 @@ class Game:
                 deb(2,"In main enemy is "+str(enemy.name))
                 direction = curWar.moveToWar(enemy)
                 moved = True
-                turnMade = False
+                
 
-            else:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        done = True 
-                    if event.type == pygame.KEYDOWN:
-                        if event.key ==  pygame.K_LEFT:
-                            direction = "l"
-                            key = pygame.K_LEFT
-                        elif event.key ==  pygame.K_RIGHT:
-                            direction = "r"
-                            key = pygame.K_RIGHT
-                        elif event.key ==  pygame.K_UP:
-                            direction = "u"   
-                            key = pygame.K_UP
-                        elif event.key ==  pygame.K_DOWN:
-                            direction = "d"
-                            key = pygame.K_DOWN      
-                        if   direction in "udlr": 
-                            #while not event.type == pygame.KEYUP: continue
-                            moved = True   
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    done = True 
+                if curWar.human and event.type == pygame.KEYDOWN:
+                    if event.key ==  pygame.K_LEFT:
+                        direction = "l"
+                    elif event.key ==  pygame.K_RIGHT:
+                        direction = "r"
+                    elif event.key ==  pygame.K_UP:
+                        direction = "u"   
+                    elif event.key ==  pygame.K_DOWN:
+                        direction = "d"
+                    elif event.key ==  pygame.K_SPACE:
+                        turnMade = True
+                    if   direction in "udlr": 
+                        #while not event.type == pygame.KEYUP: continue
+                        moved = True   
             if moved:
                 curWar.updateWarior(self.board,direction)
-                curWar.current = False
+                
                 if direction !="":
                     direction = ""
                 moved = False
+            if turnMade:
                 self.endTurn(curWar)
+                turnMade = False
+                curWar.current = False
 
             deb(2,"Now you should press Enter")
             
