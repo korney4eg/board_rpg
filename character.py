@@ -22,9 +22,27 @@ class Atack:
     def isEnough(self,points):
         return self.points <= points
     
+class Team:
+    def __init__(self, name):
+        self.name = name
+        self.wariors = []
+        
+    def addToTeam(self,warior):
+        self.wariors.append(warior)
+        warior.team = self.name
+        
+    def addTeamToBoard(self,board):
+        for war in self.wariors:
+            board.addPerson(war)
+            
+    def changePic(self,pic):
+        for war in self.wariors:
+            war.image = pic        
+            
+
 
 class Person():
-    def __init__ (self,name,hp,x,y,dam,will,human=False,spd=1):
+    def __init__ (self,name,hp,x,y,dam,will,human=False,spd=1, team = ""):
         """                имя    hp    x     y      dam    will     hum
         war2 = Person("A",    100,   0,    24,    1,    3,        True) --- это объявление бойца
          Пояснения:
@@ -47,6 +65,10 @@ class Person():
         self.will=will
         self.curWill = will
         self.spd = spd
+        if team == "":
+            self.team = str(random.randint(1,64000))
+        else:
+            self.team = teeam
         if human:
             self.human = True
         else:
@@ -75,7 +97,7 @@ class Person():
         nearWar=Person("",0,9999,9999,0,0)
         mindxy = 9999
         for war in board.wariors:
-            if war == self:
+            if war.team == self.team:
                 continue
             dx = war.x - self.x
             dy = war.y - self.y
@@ -164,7 +186,7 @@ class Person():
             COL = GREEN
         else:
             COL = BLACK
-        pygame.draw.circle(screen, COL, (x-15, y+13), 2)
+        pygame.draw.circle(screen, COL, (x-35, y+13), 2)
         
         basicFont = pygame.font.SysFont(None, 24)
         

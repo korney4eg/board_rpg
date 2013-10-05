@@ -2,7 +2,7 @@
 
 import pygame
 # from time import sleep
-from character import Person
+from character import Person, Team
 from config import *
 from board import Board
 from interface import Interface
@@ -36,11 +36,11 @@ class Game:
         interface.draw(screen)
 #        while not done:
         turnMade = False
-        while self.board.countPersons() > 1 :
+        while self.board.countTeams() > 1 :
             if done: 
                 exit() 
             curWar = self.board.getWill()
-
+            curWar.current
             if curWar.curPoints == 0:
                 turnMade = True            
             key = ""
@@ -73,7 +73,7 @@ class Game:
                             # while not event.type == pygame.KEYUP: continue
                               
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        print "left button clicked"
+                        #print "left button clicked"
                         if event.button == 1:
                             # print pos
                             obj, intPos = interface.getObjectByPos(pos)
@@ -105,12 +105,18 @@ class Game:
 
 if  __name__ == "__main__" :
     board = Board(W, H)
-    war = Person("J", 500, 0, 0, 15, 5, True, spd=4)
-    board.addPerson(war)
-    war3 = Person("B", 100, 4, H - 1, 1, 7, spd=3)
-    board.addPerson(war3)
-    war4 = Person("C", 100, W - 1, H - 1, 25, 1)
-    board.addPerson(war4)
-    war4 = Person("C", 100, W - 10, H - 20, 25, 1)
-    board.addPerson(war4)
+    team1 = Team("korney")
+    team2 = Team("comp")
+    #war = Person("J", 100, 0, 0, 15, 5, True, spd=4)
+    war = Person(name= "J", hp = 100, x = 0, y = 0, dam = 15, will = 6, human = True,spd=4)
+    team1.addToTeam(war)
+    war3 = Person("B", 100, 4, H - 1, 10, 7,True, spd=3)
+    team1.addToTeam(war3)
+    #team1.changePic("images/soldier2.png")
+    war4 = Person("C", 100, W - 1, H - 1, 25,8, spd = 1)
+    team2.addToTeam(war4)
+    war5 = Person("A", 100, W - 10, H - 20, 25,6,  spd = 1)
+    team2.addToTeam(war5)
+    team1.addTeamToBoard(board)
+    team2.addTeamToBoard(board)
     new_game = Game(board)
