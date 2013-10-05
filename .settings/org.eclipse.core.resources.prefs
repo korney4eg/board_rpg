@@ -1,2 +1,5 @@
 eclipse.preferences.version=1
+encoding/character.py=utf-8
+encoding/config.py=utf-8
 encoding/game.py=utf-8
+encoding/interface.py=utf-8
