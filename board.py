@@ -160,7 +160,7 @@ class Board():
         moves, hits = self.getMoves(self.curWar)
         attacked = False
         if self.getByPos((onBx, onBy)) == 2 and \
-        self.getDistance((self.curWar.x, self.curWar.y), (onBx, onBy))\
+        self.getDistance((self.curWar.x, self.curWar.y), (onBx, onBy)) <= self.curWar.atack.getRange()\
         and self.curWar.atack.isEnough(self.curWar.curPoints):
             enemy = self.getPersonByPos((onBx, onBy))
             if self.curWar.team != enemy.team:

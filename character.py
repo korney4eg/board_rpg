@@ -37,7 +37,7 @@ class Team:
             
     def changePic(self,pic):
         for war in self.wariors:
-            war.image = pic        
+            war.changePic(pic)        
             
 
 
@@ -90,6 +90,9 @@ class Person():
         if board.getPersonByPos == None:
             self.x = x
             self.y = y
+            
+    def changePic(self,pic):
+        self.pic = pygame.image.load(pic).convert
 
     def getNearestEnemy(self,board):
         deb(3,"Looking for the nearest enemy")
