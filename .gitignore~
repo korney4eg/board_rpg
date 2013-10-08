@@ -33,6 +33,3 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
-
-#aptana project file
-.settings/org.eclipse.core.resources.prefs

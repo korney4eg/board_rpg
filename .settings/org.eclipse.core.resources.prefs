@@ -2,4 +2,8 @@ eclipse.preferences.version=1
 encoding/character.py=utf-8
 encoding/config.py=utf-8
 encoding/game.py=utf-8
+<<<<<<< HEAD
 separateDerivedEncodings=true
+=======
+encoding/interface.py=utf-8
+>>>>>>> 730fbf682a052eacb380c8d599cc91202c459b87
