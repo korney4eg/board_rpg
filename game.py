@@ -2,7 +2,7 @@
 
 import pygame
 # from time import sleep
-from character import Person, Team
+from character import Person, Team,Archer,Warior
 from config import *
 from board import Board
 from interface import Interface
@@ -108,15 +108,14 @@ if  __name__ == "__main__" :
     team1 = Team("korney")
     team2 = Team("comp")
     #war = Person("J", 100, 0, 0, 15, 5, True, spd=4)
-    war = Person(name= "Arc", hp = 100, x = 0, y = 0, dam = 15, will = 6, human = True,spd=4)
+    war = Archer(name= "Arc", hp = 100, x = 0, y = 0, dam = 5, will = 6, human = True,spd=4)
     team1.addToTeam(war)
-    war3 = Person("Barb", 100, 4, H - 1, 10, 7,True, spd=3)
-    war3.atack.range = 1
+    war3 = Warior("Barb", 100, W - 10, H - 20, 10, 7,True, spd=3)
     team1.addToTeam(war3)
-    team1.changePic("images/soldier3.png")
-    war4 = Person("C", 100, W - 1, H - 1, 25,8, spd = 1)
+    #team1.changePic("images/archer.png")
+    war4 = Warior("C", 100, W - 1, H - 1, 25,8, spd = 1)
     team2.addToTeam(war4)
-    war5 = Person("A", 100, W - 10, H - 20, 25,6,  spd = 1)
+    war5 = Warior("A", 100, 4, H - 1, 25,6,  spd = 1)
     team2.addToTeam(war5)
     team1.addTeamToBoard(board)
     team2.addTeamToBoard(board)

@@ -80,8 +80,6 @@ class Board():
                 screen.blit(boardPic, (w * cell, h * cell))
         cur = None
         for war in self.wariors:
-            if war.image == "":
-                war.image = pygame.image.load(SOLDIER_PIC).convert_alpha()
             war.draw(screen)
 #             if war.current:
 #                 cur = war
@@ -98,7 +96,7 @@ class Board():
         positions = [[(warior.x, warior.y)]]
         move = []
         hit = []
-        
+        shut = []
         # print positions[0]
         
         while (len(positions[0]) <= warior.curPoints):
@@ -128,18 +126,30 @@ class Board():
                     if (newPos not in hit) and (warior.x != newPos[0] or warior.y != newPos[1]) \
                     and warior.team != self.getPersonByPos(newPos).team:
                         hit.append(newPos)
+        
         if warior.atack.range > 1:
             for war in self.wariors:
                 dist = self.getDistance((warior.x, warior.y), (war.x, war.y))
                 if dist <= warior.atack.getRange() and warior.atack.isEnough(warior.curPoints)\
                 and warior.team != self.getPersonByPos((war.x, war.y)).team:
                     hit.append((war.x, war.y))
-        return move, hit
+                    
+            for w in range(W):
+                for h in range(H):
+                    dist = self.getDistance((warior.x, warior.y), (w, h))
+                    if (dist <= warior.atack.getRange()) and ((w,h) not in move) and ((w,h) not in hit) and ((warior.x, warior.y) != (w, h)):
+                        shut.append((w,h)) 
+                    
+
+
+
+            
+        return move, hit, shut
     
     def drawTurn(self, screen, warior):
 
         # print "it's done"
-        move, hit = self.getMoves(warior)
+        move, hit, shut = self.getMoves(warior)
         for m in move:
             movesurf = pygame.Surface((cell, cell)) 
             movesurf.set_colorkey((0, 0, 0)) 
@@ -152,12 +162,18 @@ class Board():
             pygame.draw.circle(movesurf, HIT_COLOR, (cell / 2, cell / 2), 4)
             movesurf = movesurf.convert()
             screen.blit(movesurf, (h[0] * cell, h[1] * cell))
+        for s in shut:
+            movesurf = pygame.Surface((cell, cell))
+            movesurf.set_colorkey((0, 0, 0))
+            pygame.draw.circle(movesurf, SHUT_COLOR, (cell / 2, cell / 2), 1)
+            movesurf = movesurf.convert()
+            screen.blit(movesurf, (s[0] * cell, s[1] * cell))        
 
     def onClick(self, pos):
         done = False
         onBx, onBy = pos[0] / cell, pos[1] / cell
         #print onBx, onBy
-        moves, hits = self.getMoves(self.curWar)
+        moves, hits, shut = self.getMoves(self.curWar)
         attacked = False
         if self.getByPos((onBx, onBy)) == 2 and \
         self.getDistance((self.curWar.x, self.curWar.y), (onBx, onBy)) <= self.curWar.atack.getRange()\

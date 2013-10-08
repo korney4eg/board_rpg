@@ -21,10 +21,13 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 MOVE_COLOR = (255,255,102,52)
 HIT_COLOR = (255,71,71,52) 
+SHUT_COLOR = GREEN
 MOVES = {"u":(0,-1),"d":(0,1),"l":(-1,0),"r":(1,0)}
 
 #Picture of the soldier
 SOLDIER_PIC="images/soldier.png"
+
+ARCHER_PIC = "images/archer.png"
 
 def deb(debug ,mes):
     if debug <= DEBUG: print mes

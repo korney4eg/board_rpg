@@ -68,7 +68,7 @@ class Person():
         if team == "":
             self.team = str(random.randint(1,64000))
         else:
-            self.team = teeam
+            self.team = team
         if human:
             self.human = True
         else:
@@ -78,7 +78,7 @@ class Person():
         self.Points = spd
         self.curPoints = self.Points
         self.current = False
-        self.pic = pygame.image.load(SOLDIER_PIC).convert
+        self.pic = None
         self.image =  ""
         self.atack = Atack(25,dam,1)
         
@@ -93,6 +93,7 @@ class Person():
             
     def changePic(self,pic):
         self.pic = pygame.image.load(pic).convert
+        #self.image = pic
 
     def getNearestEnemy(self,board):
         deb(3,"Looking for the nearest enemy")
@@ -171,7 +172,9 @@ class Person():
             
     def ima(self,screen,x,y):
         if self.image != "":
-            screen.blit(self.image, (x,y))
+            if self.pic == None:
+                self.pic = pygame.image.load(self.image).convert_alpha()
+            screen.blit(self.pic, (x,y))
         else:
             pygame.draw.rect(screen, self.color, pygame.Rect(x, y, cell, cell))
 
@@ -189,7 +192,7 @@ class Person():
             COL = GREEN
         else:
             COL = BLACK
-        pygame.draw.circle(screen, COL, (x-35, y+13), 2)
+        pygame.draw.circle(screen, COL, (x-35, y+113), 2)
         
         basicFont = pygame.font.SysFont(None, 24)
         
@@ -199,6 +202,61 @@ class Person():
         textRect.centerx = x + 50
         textRect.centery = y + 10
         screen.blit(text, textRect)
+        
+class Warior(Person):
+    def __init__ (self,name,hp,x,y,dam,will,human=False,spd=1, team = ""):
+        self.name=name
+        self.hp=hp
+        self.x=x
+        self.y=y
+        self.dam=dam
+        self.will=will
+        self.curWill = will
+        self.spd = spd
+        if team == "":
+            self.team = str(random.randint(1,64000))
+        else:
+            self.team = team
+        if human:
+            self.human = True
+        else:
+            self.human = False
+        self.team = ""    
+        self.color = (random.randrange(10,255),random.randrange(10,255),random.randrange(10,255))
+        self.Points = spd
+        self.curPoints = self.Points
+        self.current = False
+        self.pic = None
+        self.image =  SOLDIER_PIC
+        self.atack = Atack(1,dam,1)
+
+        
+class Archer(Person):
+    def __init__ (self,name,hp,x,y,dam,will,human=False,spd=1, team = ""):
+        self.name=name
+        self.hp=hp
+        self.x=x
+        self.y=y
+        self.dam=dam
+        self.will=will
+        self.curWill = will
+        self.spd = spd
+        if team == "":
+            self.team = str(random.randint(1,64000))
+        else:
+            self.team = team
+        if human:
+            self.human = True
+        else:
+            self.human = False
+        self.team = ""    
+        self.color = (random.randrange(10,255),random.randrange(10,255),random.randrange(10,255))
+        self.Points = spd
+        self.curPoints = self.Points
+        self.current = False
+        self.pic = None
+        self.image =  ARCHER_PIC
+        self.atack = Atack(10,dam,1)
         
         
 if  __name__ ==  "__main__" :  pass
