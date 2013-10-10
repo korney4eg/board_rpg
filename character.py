@@ -8,14 +8,22 @@ from config import *
 
 class Atack:
     
-    def __init__(self,person,points):
+    def __init__(self,person):
         self.person = person
-        self.points = points
-    
-    def getRange(self):
-        self.range =  self.person.PER / 3
-        if self.range == 0:
+        if self.person.__class__.__name__ =="Warior":
+            self.points = 1
             self.range = 1
+        elif self.person.__class__.__name__ =="Archer":
+            self.points = 2
+            self.range = 6
+        elif self.person.__class__.__name__ =="Mage":
+            self.points = 2
+            self.range = 6
+                
+    def getRange(self):
+#         self.range =  self.person.PER / 3
+#         if self.range == 0:
+#             self.range = 1
         return self.range
     
     
@@ -32,6 +40,9 @@ class Atack:
         # Critical strike
         if random.randrange(100) < 2 * self.person.LCK:
             self.dam *= 2
+            print "Critical damage", self.dam
+        else:
+            print "damage = ",self.dam
         return self.dam
     
 class Armor:
@@ -42,8 +53,10 @@ class Armor:
     
     def getArmor(self):
         if random.randrange(100) < self.missChance:
+            print "armor = ",self.armor
             return self.armor*1000
         else:
+            print "armor = ",self.armor
             return self.armor
     
         
@@ -107,7 +120,8 @@ class Person():
         self.current = False
         self.pic = None
         self.getPic()
-        self.atack = Atack(self,1)
+        self.atack = Atack(self)
+        self.armor = Armor(self)
 
     def getBase(self):
         self.STR = 0
@@ -149,7 +163,7 @@ class Person():
             
         
     def hit (self,enemy):
-        dam = self.atack.getDamage() - enemy.getArmor()
+        dam = self.atack.getDamage() - enemy.armor.getArmor()
         if  dam > 0:
             enemy.hp = enemy.hp - dam
         self.curPoints -= self.atack.points
