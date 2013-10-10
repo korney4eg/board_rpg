@@ -127,7 +127,7 @@ class Board():
                     and warior.team != self.getPersonByPos(newPos).team:
                         hit.append(newPos)
         
-        if warior.atack.range > 1:
+        if warior.atack.getRange() > 1:
             for war in self.wariors:
                 dist = self.getDistance((warior.x, warior.y), (war.x, war.y))
                 if dist <= warior.atack.getRange() and warior.atack.isEnough(warior.curPoints)\

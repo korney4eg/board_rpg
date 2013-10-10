@@ -8,19 +8,46 @@ from config import *
 
 class Atack:
     
-    def __init__(self,range,dam,points):
-        self.range = range
-        self.dam = dam
+    def __init__(self,person,points):
+        self.person = person
         self.points = points
     
     def getRange(self):
+        self.range =  self.person.PER / 3
+        if self.range == 0:
+            self.range = 1
         return self.range
     
-    def getDamage(self):
-        return self.dam
     
     def isEnough(self,points):
         return self.points <= points
+    
+    def getDamage(self):
+        if self.person.__class__.__name__ =="Warior":
+            self.dam = self.person.STR
+        elif self.person.__class__.__name__ =="Archer":
+            self.dam = self.person.PER
+        elif self.person.__class__.__name__ =="Mage":
+            self.dam = self.person.INT
+        # Critical strike
+        if random.randrange(100) < 2 * self.person.LCK:
+            self.dam *= 2
+        return self.dam
+    
+class Armor:
+    def __init__(self,person):
+        self.person = person
+        self.armor = self.person.AGL
+        self.missChance = self.person.AGL
+    
+    def getArmor(self):
+        if random.randrange(100) < self.missChance:
+            return self.armor*1000
+        else:
+            return self.armor
+    
+        
+        
     
 class Team:
     def __init__(self, name):
@@ -42,7 +69,7 @@ class Team:
 
 
 class Person():
-    def __init__ (self,name,hp,x,y,dam,will,human=False,spd=1, team = ""):
+    def __init__ (self,name,x,y,will,human=False, team = ""):
         """                имя    hp    x     y      dam    will     hum
         war2 = Person("A",    100,   0,    24,    1,    3,        True) --- это объявление бойца
          Пояснения:
@@ -58,13 +85,15 @@ class Person():
         board.addPerson(war2)
          Можно поиграться и добавить дополнительных ботов"""
         self.name=name
-        self.hp=hp
+        self.getBase()
+        self.getSPECIAL()
+        self.refresh()
         self.x=x
         self.y=y
-        self.dam=dam
+        self.hp = self.maxHP
+        self.mp = self.maxMP
         self.will=will
         self.curWill = will
-        self.spd = spd
         if team == "":
             self.team = str(random.randint(1,64000))
         else:
@@ -73,17 +102,56 @@ class Person():
             self.human = True
         else:
             self.human = False
-        self.team = ""    
-        self.color = (random.randrange(10,255),random.randrange(10,255),random.randrange(10,255))
-        self.Points = spd
+        self.team = ""
         self.curPoints = self.Points
         self.current = False
         self.pic = None
-        self.image =  ""
-        self.atack = Atack(25,dam,1)
+        self.getPic()
+        self.atack = Atack(self,1)
+
+    def getBase(self):
+        self.STR = 0
+        self.PER = 0
+        self.END = 5
+        self.INT = 0
+        self.AGL = 2
+        self.LCK = 0
+        
+    def changeParm(self,parm,value):
+        if parm in ['STR','PER','END','INT','AGL','LCK']:
+            if parm == 'STR':
+                self.STR = value
+            elif parm == 'PER':
+                self.PER += value
+            elif parm == 'END':
+                self.END += value
+            elif parm == 'END':
+                self.END += value
+            elif parm == 'INT':
+                self.INT += value
+            elif parm == 'AGL':
+                self.AGL += value
+            elif parm == 'LCK':
+                self.LCK += value
+                    
+                    
+    def refresh(self):
+        self.Points = self.AGL
+        self.maxHP = self.END * 2
+        self.maxMP = self.INT * 2
+        
+        
+    def getSPECIAL(self):
+        pass
+
+    def getPic(self):
+        self.image = ""
+            
         
     def hit (self,enemy):
-        enemy.hp = enemy.hp - self.atack.getDamage()
+        dam = self.atack.getDamage() - enemy.getArmor()
+        if  dam > 0:
+            enemy.hp = enemy.hp - dam
         self.curPoints -= self.atack.points
         
     def moveTo(self,board,(x,y)):
@@ -204,59 +272,30 @@ class Person():
         screen.blit(text, textRect)
         
 class Warior(Person):
-    def __init__ (self,name,hp,x,y,dam,will,human=False,spd=1, team = ""):
-        self.name=name
-        self.hp=hp
-        self.x=x
-        self.y=y
-        self.dam=dam
-        self.will=will
-        self.curWill = will
-        self.spd = spd
-        if team == "":
-            self.team = str(random.randint(1,64000))
-        else:
-            self.team = team
-        if human:
-            self.human = True
-        else:
-            self.human = False
-        self.team = ""    
-        self.color = (random.randrange(10,255),random.randrange(10,255),random.randrange(10,255))
-        self.Points = spd
-        self.curPoints = self.Points
-        self.current = False
-        self.pic = None
+    
+    def getPic(self):
         self.image =  SOLDIER_PIC
-        self.atack = Atack(1,dam,1)
+    
+    def getSPECIAL(self):
+        self.STR += 5
+        self.PER += 2
+        self.END += 4
+        self.INT += 1
+        self.AGL += 3
+        self.LCK += 3            
 
         
 class Archer(Person):
-    def __init__ (self,name,hp,x,y,dam,will,human=False,spd=1, team = ""):
-        self.name=name
-        self.hp=hp
-        self.x=x
-        self.y=y
-        self.dam=dam
-        self.will=will
-        self.curWill = will
-        self.spd = spd
-        if team == "":
-            self.team = str(random.randint(1,64000))
-        else:
-            self.team = team
-        if human:
-            self.human = True
-        else:
-            self.human = False
-        self.team = ""    
-        self.color = (random.randrange(10,255),random.randrange(10,255),random.randrange(10,255))
-        self.Points = spd
-        self.curPoints = self.Points
-        self.current = False
-        self.pic = None
+    def getPic(self):
         self.image =  ARCHER_PIC
-        self.atack = Atack(10,dam,1)
+        
+    def getSPECIAL(self):
+        self.STR += 2
+        self.PER += 4
+        self.END += 3
+        self.INT += 1
+        self.AGL += 5
+        self.LCK += 3        
         
         
 if  __name__ ==  "__main__" :  pass
