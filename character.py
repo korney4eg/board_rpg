@@ -5,20 +5,34 @@ import pygame
 import random
 from config import *
 
-
+class Weapon:
+    def __init__(self,name,range,damage):
+        self.name = name
+        self.range = range
+        self.damage = damage
+        
+    def getRange(self):
+        return self.range    
+    
+    def getDamage(self):
+        return self.damage 
+    
+    def getName(self):
+        return self.name       
+        
 class Atack:
     
     def __init__(self,person):
         self.person = person
         if self.person.__class__.__name__ =="Warior":
             self.points = 1
-            self.range = 1
+
         elif self.person.__class__.__name__ =="Archer":
             self.points = 2
-            self.range = 6
+
         elif self.person.__class__.__name__ =="Mage":
             self.points = 2
-            self.range = 6
+        self.range = self.person.weapon.getRange()
                 
     def getRange(self):
 #         self.range =  self.person.PER / 3
@@ -37,6 +51,7 @@ class Atack:
             self.dam = self.person.PER
         elif self.person.__class__.__name__ =="Mage":
             self.dam = self.person.INT
+        self.dam += self.person.weapon.getDamage()
         # Critical strike
         if random.randrange(100) < 2 * self.person.LCK:
             self.dam *= 2
@@ -101,6 +116,7 @@ class Person():
         self.getBase()
         self.getSPECIAL()
         self.refresh()
+        self.wearWeapon()
         self.x=x
         self.y=y
         self.hp = self.maxHP
@@ -115,7 +131,6 @@ class Person():
             self.human = True
         else:
             self.human = False
-        self.team = ""
         self.curPoints = self.Points
         self.current = False
         self.pic = None
@@ -131,6 +146,7 @@ class Person():
         self.AGL = 2
         self.LCK = 0
         
+    
     def changeParm(self,parm,value):
         if parm in ['STR','PER','END','INT','AGL','LCK']:
             if parm == 'STR':
@@ -160,6 +176,9 @@ class Person():
 
     def getPic(self):
         self.image = ""
+        
+    def wearWeapon(self):
+        self.weapon = Weapon("Club",1,0)
             
         
     def hit (self,enemy):
@@ -244,6 +263,8 @@ class Person():
         if enemy != None:
             deb(2,self.name+" have seen "+enemy.name+" on " +str(newPos))
             self.hit(enemy)
+            if not self.human and not self.atack.isEnough(self.curPoints):
+                self.curPoints == 0
             deb(1," Now "+enemy.name+" has " +str(enemy.hp))
 
         else:
@@ -296,8 +317,10 @@ class Warior(Person):
         self.END += 4
         self.INT += 1
         self.AGL += 3
-        self.LCK += 3            
-
+        self.LCK += 3    
+           
+    def wearWeapon(self):
+        self.weapon = Weapon("Axe",1,4)
         
 class Archer(Person):
     def getPic(self):
@@ -309,7 +332,22 @@ class Archer(Person):
         self.END += 3
         self.INT += 1
         self.AGL += 5
-        self.LCK += 3        
+        self.LCK += 3 
+    def wearWeapon(self):          
+        self.weapon = Weapon("Bow",6,3)
+     
+class Mage(Person):
+    def getPic(self):
+        self.image =  MAGE_PIC
         
-        
+    def getSPECIAL(self):
+        self.STR += 1
+        self.PER += 3
+        self.END += 2
+        self.INT += 6
+        self.AGL += 3
+        self.LCK += 3 
+    
+    def wearWeapon(self):  
+        self.weapon = Weapon("Wand",6,3)   
 if  __name__ ==  "__main__" :  pass

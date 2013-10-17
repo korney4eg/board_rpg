@@ -137,7 +137,7 @@ class Board():
             for w in range(W):
                 for h in range(H):
                     dist = self.getDistance((warior.x, warior.y), (w, h))
-                    if (dist <= warior.atack.getRange()) and ((w,h) not in move) and ((w,h) not in hit) and ((warior.x, warior.y) != (w, h)):
+                    if (dist <= warior.atack.getRange()) and ((w,h) not in hit) and ((warior.x, warior.y) != (w, h)):
                         shut.append((w,h)) 
                     
 

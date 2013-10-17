@@ -2,7 +2,7 @@
 
 import pygame
 # from time import sleep
-from character import Person, Team,Archer,Warior
+from character import Person, Team, Archer, Warior, Mage
 from config import *
 from board import Board
 from interface import Interface
@@ -115,7 +115,7 @@ if  __name__ == "__main__" :
     #team1.changePic("images/archer.png")
     war4 = Warior("C", x = W - 1, y = H - 1, will = 8)
     team2.addToTeam(war4)
-    war5 = Warior("A", x = 4, y = H - 1, will = 6)
+    war5 = Mage("A", x = 4, y = H - 1, will = 6)
     team2.addToTeam(war5)
     team1.addTeamToBoard(board)
     team2.addTeamToBoard(board)

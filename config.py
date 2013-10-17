@@ -26,8 +26,7 @@ MOVES = {"u":(0,-1),"d":(0,1),"l":(-1,0),"r":(1,0)}
 
 #Picture of the soldier
 SOLDIER_PIC="images/soldier.png"
-
 ARCHER_PIC = "images/archer.png"
-
+MAGE_PIC = "images/mage.png"
 def deb(debug ,mes):
     if debug <= DEBUG: print mes
