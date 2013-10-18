@@ -4,6 +4,7 @@ import pygame
 
 import random
 from config import *
+import time
 
 class Weapon:
     def __init__(self,name,range,damage):
@@ -68,14 +69,11 @@ class Armor:
     
     def getArmor(self):
         if random.randrange(100) < self.missChance:
-            print "armor = ",self.armor
+            print "missed!",self.armor
             return self.armor*1000
         else:
             print "armor = ",self.armor
             return self.armor
-    
-        
-        
     
 class Team:
     def __init__(self, name):
@@ -180,7 +178,7 @@ class Person():
     def wearWeapon(self):
         self.weapon = Weapon("Club",1,0)
             
-        
+   
     def hit (self,enemy):
         dam = self.atack.getDamage() - enemy.armor.getArmor()
         if  dam > 0:
@@ -222,66 +220,86 @@ class Person():
     def getTeam(self):
         return self.team
     
-    def moveToWar(self,enemy):
-        deb(3,"How should he goes...")
-        deb(3,"my x="+str(self.x)+" y="+str(self.y))
-        deb(3,"his x="+str(enemy.x)+" y="+str(enemy.y))
-        if abs(self.x-enemy.x) >= abs(self.y - enemy.y):
-            if self.x > enemy.x:
-                return "l"
-            else:
-                return "r"
-        else:
-            if self.y > enemy.y:
-                return "u"
-            else:
-                return "d"
-            
-    def goTo(self,pos):
-        if abs(self.x-pos[0]) >= abs(self.y - pos[1]):
-            if self.x > pos[0]:
-                return "l"
-            else:
-                return "r"
-        else:
-            if self.y > pos[1]:
-                return "u"
-            else:
-                return "d"
+    def animateHit(self,screen, aim):
+        if self.__class__.__name__ =="Mage":
+            ballsurf = pygame.Surface((4, 4))
+            ballsurf.set_colorkey((0, 0, 0))
+            pygame.draw.circle(ballsurf, MAGIC_BALL, (2, 2), 2)
+            ballsurf = ballsurf.convert()
+            rect = ballsurf.get_rect()
+            rect.topleft = (self.x*cell,self.y*cell)
+            while rect.x < aim[0] and rect.y < aim[1]:
+                dx = (rect.x - aim[0])/30
+                dy = (rect.y - aim[1])/30
+                move_ip(dx,dy)
+                screen.blit(ballsurf, rect) 
+                pygame.display.flip()
+                pygame.display.update()
+      
                         
-    def updatePerson(self,board,d):
-        if d not in "udlr" or d =="": 
-            return 0
-        newPos = (MOVES[d][0]+self.x,MOVES[d][1]+self.y)
-
-        deb(2,"Now "+self.name+" wants to move to "+str(newPos))
-        deb(2,"Trying to get warior by position"+str(newPos))
-        
-        if board.getByPos(newPos) == 1:
-            self.moveTo(board, newPos)
-        enemy = board.getPersonByPos(newPos)
-        if enemy != None:
-            deb(2,self.name+" have seen "+enemy.name+" on " +str(newPos))
+    def findNextPosTo(self,board,pos):
+        """ find best path to position"""
+        #TODO implement labirynth
+        m,b,c = board.getMoves(self)
+        minDist = 1000
+        for move in MOVES.values():
+            newPos = self.x+move[0],self.y+move[1]
+            if newPos in m:
+                dist =  getDistance(newPos,pos)
+                if dist < minDist:
+                    bestPath =  newPos
+                    minDist = dist
+        return   bestPath                
+    
+    def updateBot(self,board,screen = ""):
+        """ board - is our plaing board
+        here is AI programmed"""
+        if self.curPoints == 0:
+            return 
+        enemy = self.getNearestEnemy(board)
+        if getDistance((self.x,self.y),(enemy.x,enemy.y))<= self.atack.getRange() and self.atack.isEnough(self.curPoints):
+            #shut
+            self.animateHit(board.screen,(enemy.x,enemy.y))
             self.hit(enemy)
-            if not self.human and not self.atack.isEnough(self.curPoints):
-                self.curPoints == 0
-            deb(1," Now "+enemy.name+" has " +str(enemy.hp))
-
+        elif ( self.curPoints < self.atack.points):
+                # if attacked and have no more points to another atack, just wait
+            self.curPoints = 0   
         else:
-            self.x,self.y = newPos
-            deb(1,"Now "+self.name+" moved to "+str(newPos))
+            #find path to enemy
+            self.x,self.y = self.findNextPosTo (board,(enemy.x,enemy.y))
             self.curPoints -= 1
+        board.deathWork()
+        
+        
+    def updatePerson(self,board,pos):
+        moves, hits, shut = board.getMoves(self)
+        attacked = False
+        if board.getByPos((pos[0], pos[1])) == 2 and \
+        getDistance((self.x, self.y), (pos[0],pos[1])) <= self.atack.getRange()\
+        and self.atack.isEnough(self.curPoints):
+            enemy = board.getPersonByPos((pos[0],pos[1]))
+            if self.team != enemy.team:
+                self.animateHit(board.screen,(enemy.x,enemy.y))
+                self.hit(enemy)
+        elif (pos[0],pos[1]) in moves or (pos[0],pos[1]) in hits:
+            while ((pos[0],pos[1]) != (self.x, self.y)) and (not attacked):
+                self.x,self.y = self.findNextPosTo (board,pos)
+                self.curPoints -= 1
+                if board.getByPos(pos) == 2:
+                    attacked = True
+
         board.deathWork()
             
     def ima(self,screen,x,y):
         if self.image != "":
             if self.pic == None:
                 self.pic = pygame.image.load(self.image).convert_alpha()
-            screen.blit(self.pic, (x,y))
+            screen.blit(self.pic, (x,y-1))
+            
         else:
             pygame.draw.rect(screen, self.color, pygame.Rect(x, y, cell, cell))
 
-            
+        
     def draw(self, screen): # Выводим себя на экран
         
         self.ima(screen,self.x*cell, self.y*cell)
@@ -300,11 +318,16 @@ class Person():
         basicFont = pygame.font.SysFont(None, 24)
         
         # set up the text
-        text = basicFont.render(self.name+" "+str(self.hp), True, WHITE, BLACK)
+        text = basicFont.render(self.name, True, WHITE, BLACK)
         textRect = text.get_rect()
-        textRect.centerx = x + 50
-        textRect.centery = y + 10
+        textRect.x = x + 50
+        textRect.y = y + 10
         screen.blit(text, textRect)
+        pygame.draw.rect(screen, RED, pygame.Rect(x+100, y, 100, 6))    
+        pygame.draw.rect(screen, GREEN, pygame.Rect(x+100, y, self.hp*1.0/self.maxHP*100, 6)) 
+        if self.curPoints > 0:
+            pygame.draw.rect(screen, YELLOW, pygame.Rect(x+100, y+10 , self.curPoints*1.0/self.Points*100, 6)) 
+
         
 class Warior(Person):
     

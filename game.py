@@ -6,11 +6,13 @@ from character import Person, Team, Archer, Warior, Mage
 from config import *
 from board import Board
 from interface import Interface
+import random
 
 
 class Game:
     def __init__(self, board):
         self.board = board
+        
         self.objects = {board:()}
         self.main()
 
@@ -47,11 +49,7 @@ class Game:
             self.board.draw(screen)
             deb (1, "It time to go," + str(curWar.name))
             if not curWar.human:
-                enemy = curWar.getNearestEnemy(self.board)
-                deb(2, "In main enemy is " + str(enemy.name))
-                direction = curWar.moveToWar(enemy)
-#                moved = True
-                curWar.updatePerson(self.board, direction)
+                curWar.updateBot(self.board)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     done = True 
@@ -99,24 +97,41 @@ class Game:
         background = pygame.Surface(screen.get_size())
         background.fill(BLACK)  # fill the background white (red,green,blue)
         background = background.convert()  # faster blitting
+        self.board.screen = screen
         self.fight(screen)
+        pygame.quit()
+
                 
 
 
 if  __name__ == "__main__" :
     board = Board(W, H)
     team1 = Team("korney")
+    getPers = {0:Warior,1:Archer,2:Mage}
+    getName = {0:"War",1:"Arc",2:"Mag"}
+    positions = []
+    for warN in range(5):
+        num = random.randrange(3)
+        pers = getPers[num]
+        name = getName[num]
+        pos = random.randrange(W),random.randrange(H/3)
+        while pos  in positions:
+            pos = random.randrange(W),random.randrange(H/3)
+        positions.append(pos)
+        will = random.randint(1,10)
+        team1.addToTeam(pers(name+str(warN),pos[0],pos[1],will,human = True))
+
     team2 = Team("comp")
-    #war = Person("J", 100, 0, 0, 15, 5, True, spd=4)
-    war = Archer(name= "Arc", x = 0, y = 0, will = 6, human = True)
-    team1.addToTeam(war)
-    war3 = Warior("Barb", x = W - 10, y = H - 20, will = 10, human = True)
-    team1.addToTeam(war3)
-    #team1.changePic("images/archer.png")
-    war4 = Warior("C", x = W - 1, y = H - 1, will = 8)
-    team2.addToTeam(war4)
-    war5 = Mage("A", x = 4, y = H - 1, will = 6)
-    team2.addToTeam(war5)
+    for warN in range(5):
+        num = random.randrange(3)
+        pers = getPers[num]
+        name = getName[num]
+        pos = random.randrange(W),H - random.randrange(H/3)-1
+        while pos  in positions:
+            pos = random.randrange(W),H - random.randrange(H/3)-1
+        positions.append(pos)
+        will = random.randint(1,10)
+        team2.addToTeam(pers(name+str(warN),pos[0],pos[1],will,human = False))  
     team1.addTeamToBoard(board)
     team2.addTeamToBoard(board)
     new_game = Game(board)
