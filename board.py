@@ -11,6 +11,7 @@ class Board():
         self.wariors = []
         self.curWar = None
         self.teams = {}
+        self.viewHealth =True
         deb(2, "Initializing board " + str(x) + "x" + str(y) + " Complited")
 
 
@@ -42,8 +43,7 @@ class Board():
                 return 2
         return 1        
         
-    def getDistance(self, pos1, pos2):
-        return round(math.sqrt((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2))
+
     
     def getPersonByPos(self, (x, y)):
         for war in self.wariors:
@@ -81,16 +81,26 @@ class Board():
         cur = None
         for war in self.wariors:
             war.draw(screen)
+            self.drawHealth(screen,war)
+
 #             if war.current:
 #                 cur = war
                 
         l = 20
-        for war in self.wariors:
-            war.drawChars(screen, W * cell + 45 , l)
-            l += 30
+        if self.curWar != None:
+            self.curWar.drawChars(screen, W * cell + 45 , l)
         if self.curWar != None:
             self.drawTurn(screen, self.curWar)
         
+    def drawHealth(self,screen,war):
+        x,y = war.x *cell,war.y*cell
+        if self.viewHealth:
+            pygame.draw.rect(screen, RED, pygame.Rect(x, y+cell - 3, cell - 3, 2))    
+            pygame.draw.rect(screen, GREEN, pygame.Rect(x, y+cell - 3, war.hp*1.0/war.maxHP*(cell - 3), 2)) 
+            if war.curPoints > 0:
+                pygame.draw.rect(screen, YELLOW, pygame.Rect(x, y+cell , war.curPoints*1.0/war.Points*(cell - 3), 2)) 
+            
+ 
     def getMoves(self, warior):
         moves = ["u", "d", "l", "r"]
         positions = [[(warior.x, warior.y)]]
@@ -129,21 +139,16 @@ class Board():
         
         if warior.atack.getRange() > 1:
             for war in self.wariors:
-                dist = self.getDistance((warior.x, warior.y), (war.x, war.y))
+                dist = getDistance((warior.x, warior.y), (war.x, war.y))
                 if dist <= warior.atack.getRange() and warior.atack.isEnough(warior.curPoints)\
                 and warior.team != self.getPersonByPos((war.x, war.y)).team:
                     hit.append((war.x, war.y))
                     
             for w in range(W):
                 for h in range(H):
-                    dist = self.getDistance((warior.x, warior.y), (w, h))
-                    if (dist <= warior.atack.getRange()) and ((w,h) not in move) and ((w,h) not in hit) and ((warior.x, warior.y) != (w, h)):
+                    dist = getDistance((warior.x, warior.y), (w, h))
+                    if (dist <= warior.atack.getRange()) and ((w,h) not in hit) and ((warior.x, warior.y) != (w, h)):
                         shut.append((w,h)) 
-                    
-
-
-
-            
         return move, hit, shut
     
     def drawTurn(self, screen, warior):
@@ -169,29 +174,8 @@ class Board():
             movesurf = movesurf.convert()
             screen.blit(movesurf, (s[0] * cell, s[1] * cell))        
 
+
+    
     def onClick(self, pos):
-        done = False
         onBx, onBy = pos[0] / cell, pos[1] / cell
-        #print onBx, onBy
-        moves, hits, shut = self.getMoves(self.curWar)
-        attacked = False
-        if self.getByPos((onBx, onBy)) == 2 and \
-        self.getDistance((self.curWar.x, self.curWar.y), (onBx, onBy)) <= self.curWar.atack.getRange()\
-        and self.curWar.atack.isEnough(self.curWar.curPoints):
-            enemy = self.getPersonByPos((onBx, onBy))
-            if self.curWar.team != enemy.team:
-                self.curWar.hit(enemy)
-                self.deathWork()
-                return
-            
-        # if self.curWar.atack.range >= self.getDistance(pos1, pos2)
-        if (onBx, onBy) in moves or (onBx, onBy) in hits:
-            while ((onBx, onBy) != (self.curWar.x, self.curWar.y)) and (not attacked):
-                direction = self.curWar.goTo((onBx, onBy))
-                newPos = (MOVES[direction][0] + self.curWar.x, MOVES[direction][1] + self.curWar.y)
-                #print "next position", newPos
-                if self.getByPos(newPos) == 2:
-                    attacked = True
-                    
-                  #  print "I want to atack enemy from", (self.curWar.x, self.curWar.y), "to", (onBx, onBy)
-                self.curWar.updatePerson(self, direction)
+        self.curWar.updatePerson(self,(onBx, onBy))
