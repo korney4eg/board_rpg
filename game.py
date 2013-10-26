@@ -104,8 +104,9 @@ class Game:
 
 
 if  __name__ == "__main__" :
+    name = raw_input("Enter your name:")
     board = Board(W, H)
-    team1 = Team("korney")
+    team1 = Team(name)
     team2 = Team("comp")
     #war = Person("J", 100, 0, 0, 15, 5, True, spd=4)
     war = Archer(name= "Arc", x = 0, y = 0, will = 6, human = True)
