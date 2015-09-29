@@ -36,3 +36,6 @@ nosetests.xml
 
 #aptana project file
 .settings/org.eclipse.core.resources.prefs
+
+#vim backup files
+*~
